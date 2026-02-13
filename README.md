@@ -115,6 +115,7 @@ In production this would include retry policies, monitoring, and alerting.
 - Delta Lake
 - Databricks SQL
 - GitHub integration
+- LLMs
 
 ---
 
