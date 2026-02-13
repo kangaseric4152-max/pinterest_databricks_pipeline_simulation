@@ -97,6 +97,17 @@ In a production environment:
 
 ---
 
+## Orchestration
+
+The Bronze and Silver layers are orchestrated using a Databricks multi-task job:
+- Task 1: File-triggered Auto Loader ingestion
+- Task 2: Silver transformation
+- Task 3: Gold aggregation
+
+In production this would include retry policies, monitoring, and alerting.
+
+---
+
 ## Technologies Used
 
 - Databricks (Serverless)
