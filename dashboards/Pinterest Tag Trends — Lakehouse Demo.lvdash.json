@@ -1,0 +1,354 @@
+{
+  "datasets": [
+    {
+      "name": "4ac6524b",
+      "displayName": "Top Tags Trends by Quarter and Year",
+      "queryLines": [
+        "with last_4_quarters as (\r\n",
+        "  select\r\n",
+        "    post_year,\r\n",
+        "    post_quarter\r\n",
+        "  from workspace.default.v_top_tags_by_quarter\r\n",
+        "  group by post_year, post_quarter\r\n",
+        "  order by post_year desc, post_quarter desc\r\n",
+        "  limit 4\r\n",
+        ") --select * from last_4_quarters;\r\n",
+        "select\r\n",
+        "  concat(post_year,'_', post_quarter) as year_quarter,\r\n",
+        "  tag,\r\n",
+        "  tag_count,\r\n",
+        "  rnk\r\n",
+        "from workspace.default.v_top_tags_by_quarter tt\r\n",
+        "join last_4_quarters l4 using(post_year, post_quarter)\r\n",
+        "where tt.rnk <= 5\r\n",
+        "order by (post_year * 10 + post_quarter) asc, rnk asc"
+      ]
+    },
+    {
+      "name": "41b53bb4",
+      "displayName": "Trend Analysis of Tags Over Time",
+      "queryLines": [
+        "WITH last_4_quarters AS (\r\n",
+        "  SELECT post_year, post_quarter\r\n",
+        "  FROM workspace.default.v_tag_trend\r\n",
+        "  GROUP BY post_year, post_quarter\r\n",
+        "  ORDER BY (post_year * 10 + post_quarter) DESC\r\n",
+        "  LIMIT 4\r\n",
+        "),\r\n",
+        "top_tags AS (\r\n",
+        "  SELECT tag\r\n",
+        "  FROM workspace.default.v_tag_trend t\r\n",
+        "  JOIN last_4_quarters l4 USING (post_year, post_quarter)\r\n",
+        "  GROUP BY tag\r\n",
+        "  ORDER BY SUM(tag_count) DESC\r\n",
+        "  LIMIT 8\r\n",
+        ")\r\n",
+        "SELECT\r\n",
+        "  (t.post_year * 10 + t.post_quarter) AS year_q,\r\n",
+        "  concat(t.post_year, '_', t.post_quarter) AS year_quarter,\r\n",
+        "  t.post_year,\r\n",
+        "  t.post_quarter,\r\n",
+        "  t.tag,\r\n",
+        "  t.tag_count,\r\n",
+        "  t.distinct_users\r\n",
+        "FROM workspace.default.v_tag_trend t\r\n",
+        "JOIN last_4_quarters l4 USING (post_year, post_quarter)\r\n",
+        "JOIN top_tags tt USING (tag)\r\n",
+        "ORDER BY year_q, distinct_users DESC;"
+      ]
+    },
+    {
+      "name": "6ffbef33",
+      "displayName": "Pinterest User Engagement Trends",
+      "queryLines": [
+        "WITH last_4_quarters AS (\r\n",
+        "  SELECT post_year, post_quarter\r\n",
+        "  FROM workspace.default.pinterest_post_tags_silver\r\n",
+        "  GROUP BY post_year, post_quarter\r\n",
+        "  ORDER BY (post_year * 10 + post_quarter) DESC\r\n",
+        "  LIMIT 4\r\n",
+        ")\r\n",
+        "SELECT\r\n",
+        "  (s.post_year * 10 + s.post_quarter) AS year_q,\r\n",
+        "  concat(s.post_year, '_', s.post_quarter) AS year_quarter,\r\n",
+        "  COUNT(DISTINCT s.user_id) AS distinct_users\r\n",
+        "FROM workspace.default.pinterest_post_tags_silver s\r\n",
+        "JOIN last_4_quarters l4 USING (post_year, post_quarter)\r\n",
+        "GROUP BY 1,2\r\n",
+        "ORDER BY year_q;"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "a2cf0db7",
+      "displayName": "dashboard",
+      "layout": [
+        {
+          "widget": {
+            "name": "56fa3fbd",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "4ac6524b",
+                  "fields": [
+                    {
+                      "name": "tag_count",
+                      "expression": "`tag_count`"
+                    },
+                    {
+                      "name": "tag",
+                      "expression": "`tag`"
+                    },
+                    {
+                      "name": "year_quarter",
+                      "expression": "`year_quarter`"
+                    },
+                    {
+                      "name": "sum(tag_count)",
+                      "expression": "SUM(`tag_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Top Tags per Quarter",
+                "showTitle": true,
+                "showDescription": false
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "year_quarter",
+                  "axis": {
+                    "title": "Quarter"
+                  },
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(tag_count)",
+                  "axis": {
+                    "title": "Sum of tag mentions"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "tag_count",
+                  "legend": {
+                    "title": "Tag mentions"
+                  },
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "label": {
+                  "show": true,
+                  "text": {
+                    "fieldName": "tag"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 1,
+            "width": 12,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "a7e33bc6",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "41b53bb4",
+                  "fields": [
+                    {
+                      "name": "tag",
+                      "expression": "`tag`"
+                    },
+                    {
+                      "name": "year_quarter",
+                      "expression": "`year_quarter`"
+                    },
+                    {
+                      "name": "tag_count",
+                      "expression": "`tag_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Tag Trends Over Time",
+                "showTitle": true
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "year_quarter",
+                  "axis": {
+                    "title": "Quarter"
+                  },
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "tag_count",
+                  "axis": {
+                    "title": "Tag mentions"
+                  },
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "tag",
+                  "legend": {
+                    "title": "Tag"
+                  },
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "natural-order"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "8947c2b6",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "6ffbef33",
+                  "fields": [
+                    {
+                      "name": "year_quarter",
+                      "expression": "`year_quarter`"
+                    },
+                    {
+                      "name": "distinct_users",
+                      "expression": "`distinct_users`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Unique Users Trend",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "year_quarter",
+                  "axis": {
+                    "title": "Quarter"
+                  },
+                  "displayName": "Year",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "distinct_users",
+                  "displayName": "Unique Users",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 9,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "fc71e90c",
+            "multilineTextboxSpec": {
+              "lines": [
+                "End-to-end Databricks lakehouse pipeline: Auto Loader ingestion → Delta Bronze/Silver/Gold layers → ranked tag analytics → dashboard powered by semantic views."
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 1
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "9412bed7",
+      "displayName": "Global Filters",
+      "layout": [
+        {
+          "widget": {
+            "name": "86f73ece",
+            "spec": {
+              "version": 2,
+              "widgetType": "filter-single-select",
+              "encodings": {},
+              "frame": {
+                "showTitle": true
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 1,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
