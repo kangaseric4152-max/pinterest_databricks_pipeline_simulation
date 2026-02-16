@@ -15,6 +15,19 @@ rather than heavy infrastructure or large-scale cluster tuning.
 
 This pipeline follows a Medallion (Bronze / Silver / Gold) pattern:
 
+### Data Flow
+
+```mermaid
+graph Pipeline;
+  JSON (partitioned)-->Auto Loader (schema evolution + checkpointing);
+  Auto Loader (schema evolution + checkpointing) -->Bronze (raw + metadata);
+  Bronze (raw + metadata)-->Silver (normalized tags);
+  Silver (normalized tags)-->Gold (aggregations + ranking);
+  Gold (aggregations + ranking)-->SQL Views; 
+  SQL Views-->Dashboard;
+```
+
+
 **Bronze**
 - Auto Loader ingests JSON files from a managed Volume (file arrival trigger).
 - Captures metadata such as `_metadata.file_path`.
