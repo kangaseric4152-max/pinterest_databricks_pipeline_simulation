@@ -19,7 +19,7 @@ This pipeline follows a Medallion (Bronze / Silver / Gold) pattern:
 
 ```mermaid
 
-flowchart TD
+flowchart LR
 
     A(Partitioned JSON Files<br/>year=YYYY / quarter=Q)
         --> B(Auto Loader<br/>cloudFiles<br/>Schema Evolution + Checkpointing)
