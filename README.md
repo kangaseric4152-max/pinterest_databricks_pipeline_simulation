@@ -18,21 +18,23 @@ This pipeline follows a Medallion (Bronze / Silver / Gold) pattern:
 ### Data Flow
 
 ```mermaid
-
 flowchart LR
-
-    A(Partitioned JSON Files<br/>year=YYYY / quarter=Q)
+    subgraph Ingestion
+        A(Partitioned JSON Files<br/>year=YYYY / quarter=Q)
         --> B(Auto Loader<br/>cloudFiles<br/>Schema Evolution + Checkpointing)
+    end
+    
+    subgraph Processing
+        B --> C(Bronze Layer<br/>Raw Ingest<br/>_metadata + _ingest_ts)
+        C --> D(Silver Layer<br/>Hashtag Explosion<br/>Normalization + Filtering)
+        D --> E(Gold Layer<br/>Aggregations<br/>Tag Counts + Distinct Users)
+    end
 
-    B --> C(Bronze Layer<br/>Raw Ingest<br/>_metadata + _ingest_ts)
+    subgraph Serving
+        E --> F(SQL Views<br/>Top Tags / Trend Views)
+        F --> G(Dashboard<br/>Lakehouse SQL)
+    end
 
-    C --> D(Silver Layer<br/>Hashtag Explosion<br/>Normalization + Filtering)
-
-    D --> E(Gold Layer<br/>Aggregations<br/>Tag Counts + Distinct Users)
-
-    E --> F(SQL Views<br/>Top Tags / Trend Views)
-
-    F --> G(Dashboard<br/>Lakehouse SQL)
 ```
 
 
