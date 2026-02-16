@@ -27,7 +27,7 @@ flowchart LR
     subgraph Processing
         B --> C(Bronze Layer<br/>Raw Ingest<br/>_metadata + _ingest_ts)
         C --> D("Silver Layer<br/>Hashtag Normalization<br/>(explode + trim)")
-        D --> E(Gold Layer<br/>Aggregations<br/>Tag Counts + Distinct Users)
+        D --> E(Gold Layer<br/>Quarterly Aggregations<br/>Tag Counts + Distinct Users)
     end
 
     subgraph Serving
