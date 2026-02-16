@@ -26,13 +26,13 @@ flowchart LR
     
     subgraph Processing
         B --> C(Bronze Layer<br/>Raw Ingest<br/>_metadata + _ingest_ts)
-        C --> D(Silver Layer<br/>Hashtag Explosion<br/>Normalization + Filtering)
+        C --> D("Silver Layer<br/>Hashtag Normalization<br/>(explode + trim)")
         D --> E(Gold Layer<br/>Aggregations<br/>Tag Counts + Distinct Users)
     end
 
     subgraph Serving
         E --> F(SQL Views<br/>Top Tags / Trend Views)
-        F --> G(Dashboard<br/>Lakehouse SQL)
+        F --> G(Lakehouse<br/>SQL Dashboard)
     end
 
 ```
