@@ -18,13 +18,21 @@ This pipeline follows a Medallion (Bronze / Silver / Gold) pattern:
 ### Data Flow
 
 ```mermaid
-graph Pipeline;
-  JSON (partitioned)-->Auto Loader (schema evolution + checkpointing);
-  Auto Loader (schema evolution + checkpointing) -->Bronze (raw + metadata);
-  Bronze (raw + metadata)-->Silver (normalized tags);
-  Silver (normalized tags)-->Gold (aggregations + ranking);
-  Gold (aggregations + ranking)-->SQL Views; 
-  SQL Views-->Dashboard;
+
+flowchart TD
+
+    A(Partitioned JSON Files<br/>year=YYYY / quarter=Q)
+        --> B(Auto Loader<br/>cloudFiles<br/>Schema Evolution + Checkpointing)
+
+    B --> C(Bronze Layer<br/>Raw Ingest<br/>_metadata + _ingest_ts)
+
+    C --> D(Silver Layer<br/>Hashtag Explosion<br/>Normalization + Filtering)
+
+    D --> E(Gold Layer<br/>Aggregations<br/>Tag Counts + Distinct Users)
+
+    E --> F(SQL Views<br/>Top Tags / Trend Views)
+
+    F --> G(Dashboard<br/>Lakehouse SQL)
 ```
 
 
