@@ -4,56 +4,18 @@
       "name": "4ac6524b",
       "displayName": "Top Tags Trends by Quarter and Year",
       "queryLines": [
-        "with last_4_quarters as (\r\n",
-        "  select\r\n",
-        "    post_year,\r\n",
-        "    post_quarter\r\n",
-        "  from workspace.default.v_top_tags_by_quarter\r\n",
-        "  group by post_year, post_quarter\r\n",
-        "  order by post_year desc, post_quarter desc\r\n",
-        "  limit 4\r\n",
-        ") --select * from last_4_quarters;\r\n",
-        "select\r\n",
-        "  concat(post_year,'_', post_quarter) as year_quarter,\r\n",
-        "  tag,\r\n",
-        "  tag_count,\r\n",
-        "  rnk\r\n",
-        "from workspace.default.v_top_tags_by_quarter tt\r\n",
-        "join last_4_quarters l4 using(post_year, post_quarter)\r\n",
-        "where tt.rnk <= 5\r\n",
-        "order by (post_year * 10 + post_quarter) asc, rnk asc"
+        "SELECT year_quarter, tag, tag_count, rnk\r\n",
+        "FROM workspace.default.v_top_tags_by_quarter_last4\r\n",
+        "WHERE rnk <= 5\r\n",
+        "ORDER BY (post_year * 10 + post_quarter) ASC, rnk ASC;"
       ]
     },
     {
       "name": "41b53bb4",
       "displayName": "Trend Analysis of Tags Over Time",
       "queryLines": [
-        "WITH last_4_quarters AS (\r\n",
-        "  SELECT post_year, post_quarter\r\n",
-        "  FROM workspace.default.v_tag_trend\r\n",
-        "  GROUP BY post_year, post_quarter\r\n",
-        "  ORDER BY (post_year * 10 + post_quarter) DESC\r\n",
-        "  LIMIT 4\r\n",
-        "),\r\n",
-        "top_tags AS (\r\n",
-        "  SELECT tag\r\n",
-        "  FROM workspace.default.v_tag_trend t\r\n",
-        "  JOIN last_4_quarters l4 USING (post_year, post_quarter)\r\n",
-        "  GROUP BY tag\r\n",
-        "  ORDER BY SUM(tag_count) DESC\r\n",
-        "  LIMIT 8\r\n",
-        ")\r\n",
-        "SELECT\r\n",
-        "  (t.post_year * 10 + t.post_quarter) AS year_q,\r\n",
-        "  concat(t.post_year, '_', t.post_quarter) AS year_quarter,\r\n",
-        "  t.post_year,\r\n",
-        "  t.post_quarter,\r\n",
-        "  t.tag,\r\n",
-        "  t.tag_count,\r\n",
-        "  t.distinct_users\r\n",
-        "FROM workspace.default.v_tag_trend t\r\n",
-        "JOIN last_4_quarters l4 USING (post_year, post_quarter)\r\n",
-        "JOIN top_tags tt USING (tag)\r\n",
+        "explain SELECT *\r\n",
+        "FROM workspace.default.v_tag_trend_last4_top8\r\n",
         "ORDER BY year_q, distinct_users DESC;"
       ]
     },
@@ -286,6 +248,9 @@
                   "scale": {
                     "type": "quantitative"
                   }
+                },
+                "label": {
+                  "show": false
                 }
               }
             }
