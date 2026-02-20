@@ -59,6 +59,9 @@ flowchart LR
   - distinct_users
 - Materializes analytics-ready Delta tables for dashboards.
 
+### Execution Plan Considerations
+The Gold layer is designed to minimize recomputation by pre-aggregating tag counts. Dashboard queries operate on this reduced dataset to avoid repeated heavy transformations on raw data.
+
 ---
 
 ## Key Technical Features
@@ -83,6 +86,19 @@ flowchart LR
 4. Silver transformation notebook normalizes and explodes tags.
 5. Gold aggregation computes metrics for dashboard consumption.
 6. Databricks SQL dashboard queries Gold layer views.
+
+---
+
+## Query Optimization & Execution Analysis
+
+- Ensured last_4_quarters CTE is broadcast-joined to minimize shuffle.
+- Verified use of BroadcastHashJoin for small dimension sets.
+- Confirmed window ranking (RANK() OVER (PARTITION BY ...)) triggers expected shuffle boundaries.
+- Observed adaptive execution (AQE) behavior in Spark.
+- Validated that Top-K filtering reduces shuffle volume before final sort.
+- Avoided unnecessary materialization at this dataset scale.
+
+Result: Efficient execution plans with only necessary shuffle stages and broadcast joins for small dimension filters.
 
 ---
 
@@ -151,3 +167,5 @@ This project demonstrates the ability to:
 - Iterate rapidly while maintaining structural clarity
 
 Created: 2026-02-13
+
+Updated: 2026-02-20
